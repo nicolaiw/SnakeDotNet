@@ -17,17 +17,21 @@ namespace SnakeDotNet
     {
         private Snake Snake { get; set; }
         private bool _run = true;
+        private bool _pause = false;
+        private Task _workerTask;
+        private TaskCompletionSource _pausCompletenSource;
 
         public MainWindow()
         {
             InitializeComponent();
 
             KeyDown += MainWindow_KeyDown;
+            _pausCompletenSource = new TaskCompletionSource();
 
-            _ = Init();
+            _workerTask = RunAsync();
         }
 
-        private async Task Init()
+        private Task RunAsync()
         {
             try
             {
@@ -47,49 +51,51 @@ namespace SnakeDotNet
                                   yMax: (int)Height,
                                   links: initialSnake);
 
-                await Task.Run(() =>
+                return Dispatcher.Invoke(async () =>
                 {
-                    Dispatcher.Invoke(async () =>
+                    foreach (var link in Snake.Links)
                     {
-                        foreach (var link in Snake.Links)
+                        this.canvas.Children.Add(link);
+                    }
+
+                    var currentSnack = SpawSnack();
+
+                    while (_run)
+                    {
+                        await Task.Delay(millisecondsDelay: 30);
+
+                        if (_pause)
                         {
-                            this.canvas.Children.Add(link);
+                            await _pausCompletenSource.Task;
                         }
 
-                        var currentSnack = SpawSnack();
+                        Snake.MoveForwad();
 
-                        while (_run)
+                        var newHeadPosition = GetPosition(Snake.Links.Last());
+                        var snackPosition = GetPosition(currentSnack);
+
+                        if (newHeadPosition.X == snackPosition.X && newHeadPosition.Y == snackPosition.Y)
                         {
-                            await Task.Delay(millisecondsDelay: 30);
-                            
-                            Snake.MoveForwad();
-
-                            var newHeadPosition = GetPosition(Snake.Links.Last());
-                            var snackPosition = GetPosition(currentSnack);
-
-                            if (newHeadPosition.X == snackPosition.X && newHeadPosition.Y == snackPosition.Y)
+                            Dispatcher.Invoke(() =>
                             {
-                                Dispatcher.Invoke(() =>
-                                {
-                                    canvas.Children.Remove(currentSnack);
-                                    currentSnack = SpawSnack();
-                                });
+                                canvas.Children.Remove(currentSnack);
+                                currentSnack = SpawSnack();
+                            });
 
-                                Snake.Extend();
-                            }
-
-                            if (Snake.CheckCollision())
-                            {
-                                break;
-                            }
+                            Snake.Extend();
                         }
-                    });
+
+                        if (Snake.CheckCollision())
+                        {
+                            _run = false;
+                            break;
+                        }
+                    }
                 });
             }
-            catch (Exception ex)
+            catch (/*Exception ex*/)
             {
-                // TODO: Handle this in a better way
-                var x = ex;
+                return Task.CompletedTask;
             }
         }
 
@@ -103,7 +109,6 @@ namespace SnakeDotNet
             };
 
             var rnd = new Random();
-
             int x, y;
 
             do
@@ -120,7 +125,7 @@ namespace SnakeDotNet
             } while (Snake.Links.Any(rect =>
               {
                   var pos = GetPosition(rect);
-                  
+
                   return pos.X == x && pos.Y == y;
               }));
 
@@ -146,17 +151,24 @@ namespace SnakeDotNet
             });
         }
 
-        private void MainWindow_KeyDown(object sender, KeyEventArgs e)
+        private async void MainWindow_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Escape)
             {
+                _pause = true;
                 var menuCtrl = new MenuWindow(
                     menuWindow =>
                     {
                         // TODO: sauber beenden --> TaskCancelation
                         Application.Current.Shutdown();
                     },
-                    menuWindow => menuWindow.Close());
+                    menuWindow =>
+                    {
+                        _pause = false;
+                        _pausCompletenSource.SetResult();
+                        _pausCompletenSource = new TaskCompletionSource();
+                        menuWindow.Close();
+                    });
 
                 menuCtrl.ShowDialog();
             }
@@ -176,15 +188,16 @@ namespace SnakeDotNet
             {
                 Snake.CurrentDirection = new Point(10, 0);
             }
-            else if(e.Key == Key.Enter)
+            else if (e.Key == Key.Enter)
             {
-                //// TODO: restart safely
-                //_run = false;
-                //canvas.Children.Clear();
+                if (_run)
+                    return;
 
-                //// TODO: wait vor task to complete before start sarting again
-                //_run = true;
-                //_ = Init();
+                _run = false;
+                canvas.Children.Clear();
+                await _workerTask;
+                _run = true;
+                _workerTask = RunAsync();
             }
         }
 
@@ -264,7 +277,7 @@ namespace SnakeDotNet
             {
                 x = xMax;
             }
-            else if (currentX > xMax)
+            else if (currentX >= xMax)
             {
                 x = 0;
             }
