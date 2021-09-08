@@ -93,7 +93,7 @@ namespace SnakeDotNet
                     }
                 });
             }
-            catch (/*Exception ex*/)
+            catch /*(Exception ex)*/
             {
                 return Task.CompletedTask;
             }
@@ -109,6 +109,7 @@ namespace SnakeDotNet
             };
 
             var rnd = new Random();
+
             int x, y;
 
             do
