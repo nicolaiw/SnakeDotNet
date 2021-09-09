@@ -11,5 +11,11 @@
         WindowStartupLocation="CenterScreen"
         ResizeMode="NoResize">
     <Canvas x:Name="canvas"
-            Background="Aqua"/>
+            Background="Aqua">
+        <Label x:Name="pointsLabel"
+               Content="0"
+               HorizontalContentAlignment="Right"
+               Width="800"/>
+    </Canvas>
+
 </Window>

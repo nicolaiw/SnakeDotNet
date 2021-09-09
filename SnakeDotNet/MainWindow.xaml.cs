@@ -10,23 +10,22 @@ using System.Windows.Shapes;
 
 namespace SnakeDotNet
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
     public partial class MainWindow : Window
     {
         private Snake Snake { get; set; }
         private bool _run = true;
         private bool _pause = false;
+        private int _points;
         private Task _workerTask;
-        private TaskCompletionSource _pausCompletenSource;
+        private TaskCompletionSource _pausCompletionSource;
 
         public MainWindow()
         {
             InitializeComponent();
 
             KeyDown += MainWindow_KeyDown;
-            _pausCompletenSource = new TaskCompletionSource();
+            
+            _pausCompletionSource = new TaskCompletionSource();
 
             _workerTask = RunAsync();
         }
@@ -35,6 +34,9 @@ namespace SnakeDotNet
         {
             try
             {
+                _points = 0;
+                pointsLabel.Content = _points;
+
                 var initialSnake = new List<Rectangle>()
                 {
                     GenerateNewLink(380, 220, System.Windows.Media.Brushes.Blue),
@@ -55,7 +57,7 @@ namespace SnakeDotNet
                 {
                     foreach (var link in Snake.Links)
                     {
-                        this.canvas.Children.Add(link);
+                        canvas.Children.Add(link);
                     }
 
                     var currentSnack = SpawSnack();
@@ -66,7 +68,7 @@ namespace SnakeDotNet
 
                         if (_pause)
                         {
-                            await _pausCompletenSource.Task;
+                            await _pausCompletionSource.Task;
                         }
 
                         Snake.MoveForwad();
@@ -74,10 +76,12 @@ namespace SnakeDotNet
                         var newHeadPosition = GetPosition(Snake.Links.Last());
                         var snackPosition = GetPosition(currentSnack);
 
-                        if (newHeadPosition.X == snackPosition.X && newHeadPosition.Y == snackPosition.Y)
+                        if (newHeadPosition == snackPosition)
                         {
                             Dispatcher.Invoke(() =>
                             {
+                                _points++;
+                                pointsLabel.Content = _points;
                                 canvas.Children.Remove(currentSnack);
                                 currentSnack = SpawSnack();
                             });
@@ -95,6 +99,7 @@ namespace SnakeDotNet
             }
             catch /*(Exception ex)*/
             {
+                // TODO: Handle exceptions in a better way
                 return Task.CompletedTask;
             }
         }
@@ -120,7 +125,13 @@ namespace SnakeDotNet
                 var tempX = x / 10.0;
                 var tempY = y / 10.0;
 
-                x = (int)(Math.Round(tempX) * 10); // 189 --> 18.9;
+                // Example : 189 --> 18.9 --> 190
+                //
+                // this makes sure the snak x an y Position is divisible 10 so
+                // that we can easly check vor colision of the snake with the snack
+                // by comparint just be x and y value of the head of the snake
+                // with the snacks x and y value
+                x = (int)(Math.Round(tempX) * 10); 
                 y = (int)(Math.Round(tempY) * 10);
 
             } while (Snake.Links.Any(rect =>
@@ -160,34 +171,34 @@ namespace SnakeDotNet
                 var menuCtrl = new MenuWindow(
                     menuWindow =>
                     {
-                        // TODO: sauber beenden --> TaskCancelation
+                        // TODO: Shut down properly --> TaskCancelation (?)
                         Application.Current.Shutdown();
                     },
                     menuWindow =>
                     {
                         _pause = false;
-                        _pausCompletenSource.SetResult();
-                        _pausCompletenSource = new TaskCompletionSource();
+                        _pausCompletionSource.SetResult();
+                        _pausCompletionSource = new TaskCompletionSource();
                         menuWindow.Close();
                     });
 
                 menuCtrl.ShowDialog();
             }
-            else if (e.Key == Key.Up)
+            else if (e.Key is Key.Up or Key.W)
             {
-                Snake.CurrentDirection = new Point(0, -10);
+                Snake.CurrentDirection = Snake.UP_DIRECTION;
             }
-            else if (e.Key == Key.Down)
+            else if (e.Key is Key.Down or Key.S)
             {
-                Snake.CurrentDirection = new Point(0, 10);
+                Snake.CurrentDirection = Snake.DOWN_DIRECTION;
             }
-            else if (e.Key == Key.Left)
+            else if (e.Key is Key.Left or Key.A)
             {
-                Snake.CurrentDirection = new Point(-10, 0);
+                Snake.CurrentDirection = Snake.LEFT_DIRECTION;
             }
-            else if (e.Key == Key.Right)
+            else if (e.Key is Key.Right or Key.D)
             {
-                Snake.CurrentDirection = new Point(10, 0);
+                Snake.CurrentDirection = Snake.RIGHT_DIRECTION;
             }
             else if (e.Key == Key.Enter)
             {
@@ -196,6 +207,8 @@ namespace SnakeDotNet
 
                 _run = false;
                 canvas.Children.Clear();
+                _points = 0;
+                pointsLabel.Content = _points;
                 await _workerTask;
                 _run = true;
                 _workerTask = RunAsync();
@@ -221,7 +234,7 @@ namespace SnakeDotNet
         }
     }
 
-    public class Point
+    public class Point : IEquatable<Point>
     {
         public int X { get; set; }
         public int Y { get; set; }
@@ -231,8 +244,52 @@ namespace SnakeDotNet
             X = x;
             Y = y;
         }
-    }
+        public bool Equals(Point other)
+        {
+            if (other is null)
+                return false;
 
+            if (ReferenceEquals(this, other))
+                return true;
+
+            return X == other.X && Y == other.Y;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as Point);
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(X, Y);
+        }
+
+        public static bool operator ==(Point obj1, Point obj2)
+        {
+            if (ReferenceEquals(obj1, obj2))
+            {
+                return true;
+            }
+
+            if (obj1 is null)
+            {
+                return false;
+            }
+
+            if (obj2 is null)
+            {
+                return false;
+            }
+
+            return obj1.Equals(obj2);
+        }
+
+        public static bool operator !=(Point obj1, Point obj2)
+        {
+            return !(obj1 == obj2);
+        }
+    }
 
     public class Snake
     {
@@ -245,7 +302,42 @@ namespace SnakeDotNet
         private readonly Action<Rectangle> addLink;
         private bool _extend = false;
 
-        public Point CurrentDirection { get; set; }
+        public static readonly Point RIGHT_DIRECTION = new(x: 10, y: 0);
+        public static readonly Point LEFT_DIRECTION = new(x: -10, y:0);
+        public static readonly Point UP_DIRECTION = new(x: 0, y: -10);
+        public static readonly Point DOWN_DIRECTION = new(x: 0, y: 10);
+
+        private Point _currentDirection;
+        public Point CurrentDirection 
+        {
+            get => _currentDirection;
+            set
+            {
+                if (_currentDirection == null)
+                {
+                    _currentDirection = value;
+                    return;
+                }
+
+                if (_currentDirection == value)
+                    return;
+
+                /* Don't allow the opposit direction */
+                if (_currentDirection == RIGHT_DIRECTION && value == LEFT_DIRECTION)
+                    return;
+
+                if (_currentDirection == LEFT_DIRECTION && value == RIGHT_DIRECTION)
+                    return;
+
+                if (_currentDirection == UP_DIRECTION && value == DOWN_DIRECTION)
+                    return;
+
+                if (_currentDirection == DOWN_DIRECTION && value == UP_DIRECTION)
+                    return;
+
+                _currentDirection = value;
+            }
+        }
 
         public List<Rectangle> Links { get; set; }
 
@@ -267,7 +359,7 @@ namespace SnakeDotNet
             this.addLink = addLink;
             Links = links;
 
-            CurrentDirection = new Point(x: 10, y: 0); // right
+            CurrentDirection = RIGHT_DIRECTION;
         }
 
         private (int, int) BoundCheckXY(int currentX, int currentY)
@@ -301,7 +393,10 @@ namespace SnakeDotNet
             {
                 var tail = Links[i];
                 var tailNext = Links[i + 1];
-
+                
+                // TODO: Consider creating a model wich stores
+                // the Rectangle and the position so we don't have
+                // to read it here
                 var tailX = getX(tailNext);
                 var tailY = getY(tailNext);
 
