@@ -301,6 +301,7 @@ namespace SnakeDotNet
         private readonly int yMax;
         private readonly Action<Rectangle> addLink;
         private bool _extend = false;
+        private bool _allowDirectionChange = true;
 
         public static readonly Point RIGHT_DIRECTION = new(x: 10, y: 0);
         public static readonly Point LEFT_DIRECTION = new(x: -10, y:0);
@@ -335,7 +336,11 @@ namespace SnakeDotNet
                 if (_currentDirection == DOWN_DIRECTION && value == UP_DIRECTION)
                     return;
 
-                _currentDirection = value;
+                if (_allowDirectionChange)
+                {
+                    _allowDirectionChange = false;
+                    _currentDirection = value;
+                }
             }
         }
 
@@ -437,6 +442,19 @@ namespace SnakeDotNet
 
                 _extend = false;
             }
+
+            /*
+                Just allow one direction change for each movement.
+                
+                E.g. imagine the Delay in  the render task would be 2s.
+                It would be possible to chachge the direction within this
+                2s delay from e.g. left -> up -> right. Now when the render function
+                runs and the snake would colide with itself so the checks for the
+                opposite position in the getter of the CurrentDirection property
+                would not work as expectet and would not handle the opposite
+                direction restriction.
+             */
+            _allowDirectionChange = true;
 
             return Links;
         }
