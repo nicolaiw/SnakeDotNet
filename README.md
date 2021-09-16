@@ -8,7 +8,7 @@ Snake in C# and WPF
 ## Build with Visual Studio 2019
 Clone the repository and hit F5 :)
 
-## Control the Player
+## Control the Snake
 * **move up:** Up-Arrow / W
 * **move left:** Left-Arrow / A
 * **move down:** Down-Arrow / S
