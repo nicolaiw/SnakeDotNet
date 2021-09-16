@@ -24,7 +24,7 @@ namespace SnakeDotNet
             InitializeComponent();
 
             KeyDown += MainWindow_KeyDown;
-            
+
             _pausCompletionSource = new TaskCompletionSource();
 
             _workerTask = RunAsync();
@@ -37,12 +37,20 @@ namespace SnakeDotNet
                 _points = 0;
                 pointsLabel.Content = _points;
 
-                var initialSnake = new List<Rectangle>()
+                var initialSnake = new List<Rectangle>();
+
+                var startX = 400;
+                var startY = 220;
+                var snakeLength = 3; // Snake length without head
+
+                for (int i = snakeLength; i > 0; i--)
                 {
-                    GenerateNewLink(380, 220, System.Windows.Media.Brushes.Blue),
-                    GenerateNewLink(390, 220, System.Windows.Media.Brushes.Blue),
-                    GenerateNewLink(400,220, System.Windows.Media.Brushes.Green),
-                };
+                    var x = startX - (i * 10);
+                    var link = GenerateNewLink(x, startY, System.Windows.Media.Brushes.Blue);
+                    initialSnake.Add(link);
+                }
+
+                initialSnake.Add(GenerateNewLink(startX, startY, System.Windows.Media.Brushes.Green));
 
                 Snake = new Snake(setX: (rec, x) => Dispatcher.Invoke(() => Canvas.SetLeft(rec, x)),
                                   setY: (rec, y) => Dispatcher.Invoke(() => Canvas.SetTop(rec, y)),
@@ -131,7 +139,7 @@ namespace SnakeDotNet
                 // that we can easly check vor colision of the snake with the snack
                 // by comparint just be x and y value of the head of the snake
                 // with the snacks x and y value
-                x = (int)(Math.Round(tempX) * 10); 
+                x = (int)(Math.Round(tempX) * 10);
                 y = (int)(Math.Round(tempY) * 10);
 
             } while (Snake.Links.Any(rect =>
@@ -200,13 +208,14 @@ namespace SnakeDotNet
             {
                 Snake.CurrentDirection = Snake.RIGHT_DIRECTION;
             }
-            else if (e.Key == Key.Enter)
+            else if (e.Key is Key.Enter)
             {
                 if (_run)
                     return;
 
                 _run = false;
                 canvas.Children.Clear();
+                canvas.Children.Add(pointsLabel);
                 _points = 0;
                 pointsLabel.Content = _points;
                 await _workerTask;
@@ -304,12 +313,12 @@ namespace SnakeDotNet
         private bool _allowDirectionChange = true;
 
         public static readonly Point RIGHT_DIRECTION = new(x: 10, y: 0);
-        public static readonly Point LEFT_DIRECTION = new(x: -10, y:0);
+        public static readonly Point LEFT_DIRECTION = new(x: -10, y: 0);
         public static readonly Point UP_DIRECTION = new(x: 0, y: -10);
         public static readonly Point DOWN_DIRECTION = new(x: 0, y: 10);
 
         private Point _currentDirection;
-        public Point CurrentDirection 
+        public Point CurrentDirection
         {
             get => _currentDirection;
             set
@@ -319,6 +328,9 @@ namespace SnakeDotNet
                     _currentDirection = value;
                     return;
                 }
+
+                if (_allowDirectionChange == false)
+                    return;
 
                 if (_currentDirection == value)
                     return;
@@ -336,11 +348,8 @@ namespace SnakeDotNet
                 if (_currentDirection == DOWN_DIRECTION && value == UP_DIRECTION)
                     return;
 
-                if (_allowDirectionChange)
-                {
-                    _allowDirectionChange = false;
-                    _currentDirection = value;
-                }
+                _allowDirectionChange = false;
+                _currentDirection = value;
             }
         }
 
@@ -398,7 +407,7 @@ namespace SnakeDotNet
             {
                 var tail = Links[i];
                 var tailNext = Links[i + 1];
-                
+
                 // TODO: Consider creating a model wich stores
                 // the Rectangle and the position so we don't have
                 // to read it here
