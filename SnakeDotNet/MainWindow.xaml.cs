@@ -24,10 +24,24 @@ namespace SnakeDotNet
             InitializeComponent();
 
             KeyDown += MainWindow_KeyDown;
+            MouseDown += MainWindow_MouseDown;
 
             _pausCompletionSource = new TaskCompletionSource();
 
             _workerTask = RunAsync();
+        }
+
+        private void MainWindow_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == MouseButton.Left)
+            {
+                _pause = true;
+                DragMove();
+            }
+
+            _pause = false;
+            _pausCompletionSource.SetResult();
+            _pausCompletionSource = new TaskCompletionSource();
         }
 
         private Task RunAsync()
