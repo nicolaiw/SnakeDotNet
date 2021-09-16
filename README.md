@@ -3,8 +3,8 @@ Snake in C# and WPF
 
 ## Screenshot
 
-![](https://github.com/nicolaiw/SnakeDotNet/blob/maine/Screenshots/Screenshot1.PNG)
-
+![](https://github.com/nicolaiw/SnakeDotNet/blob/main/Screenshots/Screenshot1.PNG)
+    
 ## Build with Visual Studio 2019
 Clone the repository and hit F5 :)
 
