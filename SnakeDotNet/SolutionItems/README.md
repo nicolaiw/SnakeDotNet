@@ -15,4 +15,3 @@ Clone the repository and hit F5 :)
 
 ## TODO
 * Make the rendering hardware independent by measuring the delta time
-
