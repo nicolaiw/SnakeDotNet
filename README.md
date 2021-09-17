@@ -20,7 +20,7 @@ Clone the repository and hit F5 :)
 * **move left:** Left-Arrow / A
 * **move down:** Down-Arrow / S
 * **move right:** Right-Arrow / D
-* **menu:** ESC (Exit / Pause)
+* **menu:** ESC (Exit / Resume)
 * **enter:** To start a new game after loosing
 * **mouse down on the window:** Shift the window
 
