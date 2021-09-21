@@ -17,7 +17,7 @@ namespace SnakeDotNet
         private bool _pause = false;
         private int _points;
         private Task _workerTask;
-        private TaskCompletionSource _pausCompletionSource;
+        private TaskCompletionSource _pauseCompletionSource;
 
         public MainWindow()
         {
@@ -26,7 +26,7 @@ namespace SnakeDotNet
             KeyDown += MainWindow_KeyDown;
             MouseDown += MainWindow_MouseDown;
 
-            _pausCompletionSource = new TaskCompletionSource();
+            _pauseCompletionSource = new TaskCompletionSource();
 
             _workerTask = RunAsync();
         }
@@ -40,8 +40,8 @@ namespace SnakeDotNet
             }
 
             _pause = false;
-            _pausCompletionSource.SetResult();
-            _pausCompletionSource = new TaskCompletionSource();
+            _pauseCompletionSource.SetResult();
+            _pauseCompletionSource = new TaskCompletionSource();
         }
 
         private Task RunAsync()
@@ -90,7 +90,7 @@ namespace SnakeDotNet
 
                         if (_pause)
                         {
-                            await _pausCompletionSource.Task;
+                            await _pauseCompletionSource.Task;
                         }
 
                         Snake.MoveForwad();
@@ -199,8 +199,8 @@ namespace SnakeDotNet
                     menuWindow =>
                     {
                         _pause = false;
-                        _pausCompletionSource.SetResult();
-                        _pausCompletionSource = new TaskCompletionSource();
+                        _pauseCompletionSource.SetResult();
+                        _pauseCompletionSource = new TaskCompletionSource();
                         menuWindow.Close();
                     });
 
