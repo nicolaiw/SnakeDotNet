@@ -21,6 +21,12 @@
         <Label Content="SnakeDotNet"
                FontWeight="Bold"/>
 
+        <Label x:Name="pointsLabel"
+               Content="0"
+               FontWeight="Bold"
+               FontSize="15"
+               HorizontalContentAlignment="Center"/>
+
         <StackPanel Orientation="Horizontal"
                     HorizontalAlignment="Right">
             
@@ -47,11 +53,6 @@
                 Background="Aqua"
                 Height="450"
                 Width="800">
-            
-            <Label x:Name="pointsLabel"
-               Content="0"
-               HorizontalContentAlignment="Right"
-               Width="800"/>
         </Canvas>
     </Grid>
 
