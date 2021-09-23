@@ -5,17 +5,54 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SnakeDotNet"
         mc:Ignorable="d"
-        Height="450"
+        Height="480"
         Width="800"
         WindowStyle="None"
         WindowStartupLocation="CenterScreen"
         ResizeMode="NoResize">
-    <Canvas x:Name="canvas"
-            Background="Aqua">
-        <Label x:Name="pointsLabel"
+
+    <Grid Background="Transparent">
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="450"/>
+        </Grid.RowDefinitions>
+
+        <Label Content="SnakeDotNet"
+               FontWeight="Bold"/>
+
+        <StackPanel Orientation="Horizontal"
+                    HorizontalAlignment="Right">
+            
+            <Button Background="Transparent"
+                    Padding="5,0,5,0"
+                    Margin="0,0,15,0"
+                    Content="--"
+                    BorderThickness="0"
+                    FontWeight="Bold"
+                    FontSize="20"
+                    Click="MinimizeButton_Click"/>
+
+            <Button Background="Transparent"
+                    Padding="5,0,5,0"
+                    Content="X"
+                    BorderThickness="0"
+                    FontWeight="Bold"
+                    FontSize="20"
+                    Click="CloseButton_Click"/>
+        </StackPanel>
+
+        <Canvas Grid.Row="1"
+                x:Name="canvas"
+                Background="Aqua"
+                Height="450"
+                Width="800">
+            
+            <Label x:Name="pointsLabel"
                Content="0"
                HorizontalContentAlignment="Right"
                Width="800"/>
-    </Canvas>
+        </Canvas>
+    </Grid>
 
 </Window>

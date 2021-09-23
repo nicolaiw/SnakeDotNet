@@ -7,7 +7,7 @@
         AllowsTransparency="True"
         Background="Transparent"
         mc:Ignorable="d"
-        Height="120" Width="460" WindowStyle="None" WindowStartupLocation="CenterScreen" ResizeMode="NoResize">
+        Height="120" Width="460" WindowStyle="None" WindowStartupLocation="CenterOwner" ResizeMode="NoResize">
     <Grid Background="Transparent">
         <Button x:Name="BtnExit" Content="Exit" Margin="7,7,7,0" VerticalAlignment="Top" Height="49" FontSize="30" />
         <Button x:Name="BtnResume" Content="Resume" Margin="7,64,7,0" VerticalAlignment="Top" Height="49" FontSize="30"/>

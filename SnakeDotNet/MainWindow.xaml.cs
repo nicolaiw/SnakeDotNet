@@ -71,8 +71,8 @@ namespace SnakeDotNet
                                   getX: rec => Dispatcher.Invoke(() => (int)Canvas.GetLeft(rec)),
                                   getY: rec => Dispatcher.Invoke(() => (int)Canvas.GetTop(rec)),
                                   addLink: rec => Dispatcher.Invoke(() => canvas.Children.Add(rec)),
-                                  xMax: (int)Width,
-                                  yMax: (int)Height,
+                                  xMax: (int)canvas.Width,
+                                  yMax: (int)canvas.Height,
                                   links: initialSnake);
 
                 return Dispatcher.Invoke(async () =>
@@ -141,8 +141,8 @@ namespace SnakeDotNet
 
             do
             {
-                x = rnd.Next((int)this.Width - 10);
-                y = rnd.Next((int)this.Height - 10);
+                x = rnd.Next((int)canvas.Width - 10);
+                y = rnd.Next((int)canvas.Height - 10);
 
                 var tempX = x / 10.0;
                 var tempY = y / 10.0;
@@ -204,6 +204,7 @@ namespace SnakeDotNet
                         menuWindow.Close();
                     });
 
+                menuCtrl.Owner = this;
                 menuCtrl.ShowDialog();
             }
             else if (e.Key is Key.Up or Key.W)
@@ -254,6 +255,16 @@ namespace SnakeDotNet
             });
 
             return rect;
+        }
+
+        private void CloseButton_Click(object sender, RoutedEventArgs e)
+        {
+            Application.Current.Shutdown();
+        }
+
+        private void MinimizeButton_Click(object sender, RoutedEventArgs e)
+        {
+            WindowState = WindowState.Minimized;
         }
     }
 

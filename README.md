@@ -21,6 +21,7 @@ Clone the repository and hit F5 :)
 * **move down:** Down-Arrow / S
 * **move right:** Right-Arrow / D
 * **menu:** ESC (Exit / Resume)
+* **in the menu:** ESC to resume
 * **enter:** To start a new game after loosing
 * **mouse down on the window:** Shift the window
 
