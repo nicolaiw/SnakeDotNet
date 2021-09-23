@@ -50,7 +50,7 @@
 
         <Canvas Grid.Row="1"
                 x:Name="canvas"
-                Background="Aqua"
+                Background="#FFFFD55A"
                 Height="450"
                 Width="800">
         </Canvas>

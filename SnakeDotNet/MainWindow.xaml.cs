@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Shapes;
 
 namespace SnakeDotNet
@@ -60,11 +61,11 @@ namespace SnakeDotNet
                 for (int i = snakeLength; i > 0; i--)
                 {
                     var x = startX - (i * 10);
-                    var link = GenerateNewLink(x, startY, System.Windows.Media.Brushes.Blue);
+                    var link = GenerateNewLink(x, startY, (SolidColorBrush)new BrushConverter().ConvertFrom("#293253"));
                     initialSnake.Add(link);
                 }
 
-                initialSnake.Add(GenerateNewLink(startX, startY, System.Windows.Media.Brushes.Green));
+                initialSnake.Add(GenerateNewLink(startX, startY, (SolidColorBrush)new BrushConverter().ConvertFrom("#6dd47e")));
 
                 Snake = new Snake(setX: (rec, x) => Dispatcher.Invoke(() => Canvas.SetLeft(rec, x)),
                                   setY: (rec, y) => Dispatcher.Invoke(() => Canvas.SetTop(rec, y)),
@@ -435,7 +436,10 @@ namespace SnakeDotNet
 
                 // TODO: Consider creating a model wich stores
                 // the Rectangle and the position so we don't have
-                // to read it here
+                // to read it here.
+                // We could also consider not setting every link.
+                // Instead we cold update the saved position and just
+                // update the tail and the head.
                 var tailX = getX(tailNext);
                 var tailY = getY(tailNext);
 
@@ -464,7 +468,7 @@ namespace SnakeDotNet
                 {
                     Width = 10,
                     Height = 10,
-                    Fill = System.Windows.Media.Brushes.Blue,
+                    Fill = (SolidColorBrush)new BrushConverter().ConvertFrom("#293253"),
                 };
 
                 setX(rect, currentTailX);
