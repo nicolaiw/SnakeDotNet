@@ -7,7 +7,7 @@ Snake in C# and WPF
     
 ## How to play (Windows x64)
 
-1. Download SnakeDotNet_win_x64.zip from https://github.com/nicolaiw/SnakeDotNet/releases/tag/1.0.2
+1. Download SnakeDotNet_win_x64.zip from https://github.com/nicolaiw/SnakeDotNet/releases/tag/1.0.3
 2. You may have to authorize the zip file by right-clicking on the zip file > properties > allow/permit
 3. Extract the file
 4. Double-click SnakeDotNet.exe
