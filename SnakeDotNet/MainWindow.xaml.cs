@@ -337,6 +337,7 @@ namespace SnakeDotNet
         private readonly Action<Rectangle> addLink;
         private bool _extend = false;
         private bool _allowDirectionChange = true;
+        private int _currentTailIndex = 0;
 
         public static readonly Point RIGHT_DIRECTION = new(x: 10, y: 0);
         public static readonly Point LEFT_DIRECTION = new(x: -10, y: 0);
@@ -429,34 +430,30 @@ namespace SnakeDotNet
 
         public List<Rectangle> MoveForwad()
         {
-            for (int i = 0; i < Links.Count - 1; i++)
-            {
-                var tail = Links[i];
-                var tailNext = Links[i + 1];
+            // TODO: Consinder saving the Positions instead of
+            //       reading it every time with getX() and getY()
 
-                // TODO: Consider creating a model wich stores
-                // the Rectangle and the position so we don't have
-                // to read it here.
-                // We could also consider not setting every link.
-                // Instead we cold update the saved position and just
-                // update the tail and the head.
-                var tailX = getX(tailNext);
-                var tailY = getY(tailNext);
-
-                (tailX, tailY) = BoundCheckXY(tailX, tailY);
-
-                setX(tail, tailX);
-                setY(tail, tailY);
-            }
-
+            // Movement: Just replace the tail position with the currents
+            //           head position and save the next link index as the
+            //           new index of the tail.
+            var tail = Links[_currentTailIndex];
             var head = Links.Last();
-            var newHeadX = getX(head) + CurrentDirection.X;
-            var newHeadY = getY(head) + CurrentDirection.Y;
+
+            var currentHeadX = getX(head);
+            var currentHeadY = getY(head);
+
+            setX(tail, currentHeadX);
+            setY(tail, currentHeadY);
+
+            var newHeadX = currentHeadX + CurrentDirection.X;
+            var newHeadY = currentHeadY + CurrentDirection.Y;
 
             (newHeadX, newHeadY) = BoundCheckXY(newHeadX, newHeadY);
 
             setX(head, newHeadX);
             setY(head, newHeadY);
+
+            _currentTailIndex = ++_currentTailIndex % (Links.Count - 1);
 
             if (_extend)
             {
@@ -478,6 +475,7 @@ namespace SnakeDotNet
 
                 Links.Insert(0, rect);
 
+                _currentTailIndex = 0;
                 _extend = false;
             }
 
