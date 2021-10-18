@@ -87,7 +87,7 @@ namespace SnakeDotNet
 
                     while (_run)
                     {
-                        await Task.Delay(millisecondsDelay: 200);
+                        await Task.Delay(millisecondsDelay: 30);
 
                         if (_pause)
                         {
