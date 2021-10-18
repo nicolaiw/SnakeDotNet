@@ -83,11 +83,11 @@ namespace SnakeDotNet
                         canvas.Children.Add(link);
                     }
 
-                    var currentSnack = SpawSnack();
+                    var currentSnack = SpawnSnack();
 
                     while (_run)
                     {
-                        await Task.Delay(millisecondsDelay: 30);
+                        await Task.Delay(millisecondsDelay: 200);
 
                         if (_pause)
                         {
@@ -106,7 +106,7 @@ namespace SnakeDotNet
                                 _points++;
                                 pointsLabel.Content = _points;
                                 canvas.Children.Remove(currentSnack);
-                                currentSnack = SpawSnack();
+                                currentSnack = SpawnSnack();
                             });
 
                             Snake.Extend();
@@ -117,6 +117,8 @@ namespace SnakeDotNet
                             _run = false;
                             break;
                         }
+
+                        //Snake.Links.ForEach(link => System.Diagnostics.Debug.WriteLine(GetPosition(link).X + " "));
                     }
                 });
             }
@@ -127,7 +129,7 @@ namespace SnakeDotNet
             }
         }
 
-        private Rectangle SpawSnack()
+        private Rectangle SpawnSnack()
         {
             var snack = new Rectangle
             {
@@ -432,34 +434,12 @@ namespace SnakeDotNet
         {
             // TODO: Consinder saving the Positions instead of
             //       reading it every time with getX() and getY()
-
-            // Movement: Just replace the tail position with the currents
-            //           head position and save the next link index as the
-            //           new index of the tail.
-            var tail = Links[_currentTailIndex];
-            var head = Links.Last();
-
-            var currentHeadX = getX(head);
-            var currentHeadY = getY(head);
-
-            setX(tail, currentHeadX);
-            setY(tail, currentHeadY);
-
-            var newHeadX = currentHeadX + CurrentDirection.X;
-            var newHeadY = currentHeadY + CurrentDirection.Y;
-
-            (newHeadX, newHeadY) = BoundCheckXY(newHeadX, newHeadY);
-
-            setX(head, newHeadX);
-            setY(head, newHeadY);
-
-            _currentTailIndex = ++_currentTailIndex % (Links.Count - 1);
-
             if (_extend)
             {
-                var currentTail = Links.First();
-                var currentTailX = getX(currentTail);
-                var currentTailY = getY(currentTail);
+                var head = Links.Last();
+
+                var currentHeadX = getX(head);
+                var currentHeadY = getY(head);
 
                 var rect = new Rectangle
                 {
@@ -468,15 +448,64 @@ namespace SnakeDotNet
                     Fill = (SolidColorBrush)new BrushConverter().ConvertFrom("#293253"),
                 };
 
-                setX(rect, currentTailX);
-                setY(rect, currentTailY);
+                setX(rect, currentHeadX);
+                setY(rect, currentHeadY);
 
                 addLink(rect);
 
-                Links.Insert(0, rect);
+                var newHeadX = currentHeadX + CurrentDirection.X;
+                var newHeadY = currentHeadY + CurrentDirection.Y;
 
-                _currentTailIndex = 0;
+                (newHeadX, newHeadY) = BoundCheckXY(newHeadX, newHeadY);
+
+                setX(head, newHeadX);
+                setY(head, newHeadY);
+
+                /*
+                    We draw the new Link to the current head.
+                    To ensure that this inserted link at the very front will not for example will be used
+                    for the next tail (_currentTailIndex) we will insert it to the current index and than
+                    adjust the _currentTailIdex.
+
+                    HINT: The links are not sorted like they are rendered as we do not move
+                          The whole snake while moving. See comment "Movement" below.
+
+                    - [0][1][2][3][head] // initial Snake
+                    - [0][1][2][3][new link [4]][Head] // Imagine 3 is the current tail index
+                    - At the next move we would update the previously added link
+                      but that would not be right. Therefore we do not insert the new link at the end of the
+                      Link list but at the _currentTailIndex and then adjust the _currentTailIndex.
+                      So the new link is rendered at the very front but will become the tail at last. 
+                 */
+                Links.Insert(_currentTailIndex, rect);
+
+                _currentTailIndex = ++_currentTailIndex % (Links.Count - 1);
+
                 _extend = false;
+            }
+            else
+            {
+                // Movement: Just replace the tail position with the currents
+                //           head position and save the next link index as the
+                //           new index of the tail.
+                var tail = Links[_currentTailIndex];
+                var head = Links.Last();
+
+                var currentHeadX = getX(head);
+                var currentHeadY = getY(head);
+
+                setX(tail, currentHeadX);
+                setY(tail, currentHeadY);
+
+                var newHeadX = currentHeadX + CurrentDirection.X;
+                var newHeadY = currentHeadY + CurrentDirection.Y;
+
+                (newHeadX, newHeadY) = BoundCheckXY(newHeadX, newHeadY);
+
+                setX(head, newHeadX);
+                setY(head, newHeadY);
+
+                _currentTailIndex = ++_currentTailIndex % (Links.Count - 1);
             }
 
             /*
