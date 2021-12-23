@@ -12,7 +12,7 @@ Snake in C# and WPF
 3. Extract the file
 4. Double-click SnakeDotNet.exe
 
-## Build with Visual Studio 2019
+## Build with Visual Studio 2019/2022
 Clone the repository and hit F5 :)
 
 ## Control the Snake
