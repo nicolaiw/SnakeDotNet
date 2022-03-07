@@ -196,7 +196,7 @@ namespace SnakeDotNet
                 var menuCtrl = new MenuWindow(
                     menuWindow =>
                     {
-                        // TODO: Shut down properly --> TaskCancelation (?)
+                        // TODO: Shut down properly --> TaskCancellation (?)
                         Application.Current.Shutdown();
                     },
                     menuWindow =>
@@ -242,7 +242,7 @@ namespace SnakeDotNet
             }
         }
 
-        private Rectangle GenerateNewLink(int x, int y, System.Windows.Media.Brush color)
+        private Rectangle GenerateNewLink(int x, int y, Brush color)
         {
             var rect = new Rectangle
             {
@@ -271,6 +271,7 @@ namespace SnakeDotNet
         }
     }
 
+    // TODO: Consider using a record
     public class Point : IEquatable<Point>
     {
         public int X { get; set; }
@@ -281,6 +282,7 @@ namespace SnakeDotNet
             X = x;
             Y = y;
         }
+
         public bool Equals(Point other)
         {
             if (other is null)
@@ -471,7 +473,7 @@ namespace SnakeDotNet
                           The whole snake while moving. See comment "Movement" below.
 
                     - [0][1][2][3][head] // initial Snake
-                    - [0][1][2][3][new link [4]][Head] // Imagine 3 is the current tail index
+                    - [0][1][2][3][new link [4]][head] // Imagine 3 is the current tail index
                     - At the next move we would update the previously added link
                       but that would not be right. Therefore we do not insert the new link at the end of the
                       Link list but at the _currentTailIndex and then adjust the _currentTailIndex.
@@ -479,6 +481,7 @@ namespace SnakeDotNet
                  */
                 Links.Insert(_currentTailIndex, rect);
 
+                // Calculate the new tail index - the modulo takes care we are "looping" through the indices
                 _currentTailIndex = ++_currentTailIndex % (Links.Count - 1);
 
                 _extend = false;
