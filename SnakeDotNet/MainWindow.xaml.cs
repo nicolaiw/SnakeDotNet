@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -54,27 +53,29 @@ namespace SnakeDotNet
 
                 var initialSnake = new List<Rectangle>();
 
-                var startX = 400;
-                var startY = 220;
-                var snakeLength = 3; // Snake length without head
+                const int startX = 400;
+                const int startY = 220;
+                const int snakeLength = 3; // Snake length without head
 
-                for (int i = snakeLength; i > 0; i--)
+                for (var i = snakeLength; i > 0; i--)
                 {
                     var x = startX - (i * 10);
-                    var link = GenerateNewLink(x, startY, (SolidColorBrush)new BrushConverter().ConvertFrom("#293253"));
+                    var link = GenerateNewLink(x, startY,
+                        (SolidColorBrush) new BrushConverter().ConvertFrom("#293253"));
                     initialSnake.Add(link);
                 }
 
-                initialSnake.Add(GenerateNewLink(startX, startY, (SolidColorBrush)new BrushConverter().ConvertFrom("#6dd47e")));
+                initialSnake.Add(GenerateNewLink(startX, startY,
+                    (SolidColorBrush) new BrushConverter().ConvertFrom("#6dd47e")));
 
                 Snake = new Snake(setX: (rec, x) => Dispatcher.Invoke(() => Canvas.SetLeft(rec, x)),
-                                  setY: (rec, y) => Dispatcher.Invoke(() => Canvas.SetTop(rec, y)),
-                                  getX: rec => Dispatcher.Invoke(() => (int)Canvas.GetLeft(rec)),
-                                  getY: rec => Dispatcher.Invoke(() => (int)Canvas.GetTop(rec)),
-                                  addLink: rec => Dispatcher.Invoke(() => canvas.Children.Add(rec)),
-                                  xMax: (int)canvas.Width,
-                                  yMax: (int)canvas.Height,
-                                  links: initialSnake);
+                    setY: (rec, y) => Dispatcher.Invoke(() => Canvas.SetTop(rec, y)),
+                    getX: rec => Dispatcher.Invoke(() => (int) Canvas.GetLeft(rec)),
+                    getY: rec => Dispatcher.Invoke(() => (int) Canvas.GetTop(rec)),
+                    addLink: rec => Dispatcher.Invoke(() => canvas.Children.Add(rec)),
+                    xMax: (int) canvas.Width,
+                    yMax: (int) canvas.Height,
+                    links: initialSnake);
 
                 return Dispatcher.Invoke(async () =>
                 {
@@ -94,7 +95,7 @@ namespace SnakeDotNet
                             await _pauseCompletionSource.Task;
                         }
 
-                        Snake.MoveForwad();
+                        Snake.MoveForward();
 
                         var newHeadPosition = GetPosition(Snake.Links.Last());
                         var snackPosition = GetPosition(currentSnack);
@@ -135,7 +136,7 @@ namespace SnakeDotNet
             {
                 Width = 10,
                 Height = 10,
-                Fill = System.Windows.Media.Brushes.Red,
+                Fill = Brushes.Red,
             };
 
             var rnd = new Random();
@@ -144,8 +145,8 @@ namespace SnakeDotNet
 
             do
             {
-                x = rnd.Next((int)canvas.Width - 10);
-                y = rnd.Next((int)canvas.Height - 10);
+                x = rnd.Next((int) canvas.Width - 10);
+                y = rnd.Next((int) canvas.Height - 10);
 
                 var tempX = x / 10.0;
                 var tempY = y / 10.0;
@@ -156,15 +157,14 @@ namespace SnakeDotNet
                 // that we can easly check vor colision of the snake with the snack
                 // by comparint just be x and y value of the head of the snake
                 // with the snacks x and y value
-                x = (int)(Math.Round(tempX) * 10);
-                y = (int)(Math.Round(tempY) * 10);
-
+                x = (int) (Math.Round(tempX) * 10);
+                y = (int) (Math.Round(tempY) * 10);
             } while (Snake.Links.Any(rect =>
-              {
-                  var pos = GetPosition(rect);
+                    {
+                        var pos = GetPosition(rect);
 
-                  return pos.X == x && pos.Y == y;
-              }));
+                        return pos.X == x && pos.Y == y;
+                    }));
 
             Dispatcher.Invoke(() =>
             {
@@ -177,12 +177,12 @@ namespace SnakeDotNet
             return snack;
         }
 
-        private Point GetPosition(Rectangle rectangle)
+        private Point GetPosition(UIElement rectangle)
         {
             return Dispatcher.Invoke(() =>
             {
-                var x = (int)Canvas.GetLeft(rectangle);
-                var y = (int)Canvas.GetTop(rectangle);
+                var x = (int) Canvas.GetLeft(rectangle);
+                var y = (int) Canvas.GetTop(rectangle);
 
                 return new Point(x, y);
             });
@@ -190,55 +190,53 @@ namespace SnakeDotNet
 
         private async void MainWindow_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.Key == Key.Escape)
+            switch (e.Key)
             {
-                _pause = true;
-                var menuCtrl = new MenuWindow(
-                    menuWindow =>
-                    {
-                        // TODO: Shut down properly --> TaskCancellation (?)
-                        Application.Current.Shutdown();
-                    },
-                    menuWindow =>
-                    {
-                        _pause = false;
-                        _pauseCompletionSource.SetResult();
-                        _pauseCompletionSource = new TaskCompletionSource();
-                        menuWindow.Close();
-                    });
+                case Key.Escape:
+                {
+                    _pause = true;
+                    var menuCtrl = new MenuWindow(
+                        menuWindow =>
+                        {
+                            // TODO: Shut down properly --> TaskCancellation (?)
+                            Application.Current.Shutdown();
+                        },
+                        menuWindow =>
+                        {
+                            _pause = false;
+                            _pauseCompletionSource.SetResult();
+                            _pauseCompletionSource = new TaskCompletionSource();
+                            menuWindow.Close();
+                        });
 
-                menuCtrl.Owner = this;
-                menuCtrl.ShowDialog();
-            }
-            else if (e.Key is Key.Up or Key.W)
-            {
-                Snake.CurrentDirection = Snake.UP_DIRECTION;
-            }
-            else if (e.Key is Key.Down or Key.S)
-            {
-                Snake.CurrentDirection = Snake.DOWN_DIRECTION;
-            }
-            else if (e.Key is Key.Left or Key.A)
-            {
-                Snake.CurrentDirection = Snake.LEFT_DIRECTION;
-            }
-            else if (e.Key is Key.Right or Key.D)
-            {
-                Snake.CurrentDirection = Snake.RIGHT_DIRECTION;
-            }
-            else if (e.Key is Key.Enter)
-            {
-                if (_run)
+                    menuCtrl.Owner = this;
+                    menuCtrl.ShowDialog();
+                    break;
+                }
+                case Key.Up or Key.W:
+                    Snake.CurrentDirection = Snake.UP_DIRECTION;
+                    break;
+                case Key.Down or Key.S:
+                    Snake.CurrentDirection = Snake.DOWN_DIRECTION;
+                    break;
+                case Key.Left or Key.A:
+                    Snake.CurrentDirection = Snake.LEFT_DIRECTION;
+                    break;
+                case Key.Right or Key.D:
+                    Snake.CurrentDirection = Snake.RIGHT_DIRECTION;
+                    break;
+                case Key.Enter when _run:
                     return;
-
-                _run = false;
-                canvas.Children.Clear();
-                canvas.Children.Add(pointsLabel);
-                _points = 0;
-                pointsLabel.Content = _points;
-                await _workerTask;
-                _run = true;
-                _workerTask = RunAsync();
+                case Key.Enter:
+                    _run = false;
+                    canvas.Children.Clear();
+                    canvas.Children.Add(pointsLabel);
+                    _points = 0;
+                    pointsLabel.Content = _points;
+                    await _workerTask;
+                    _run = true;
+                    _workerTask = RunAsync();
+                    break;
             }
         }
 
@@ -274,8 +272,8 @@ namespace SnakeDotNet
     // TODO: Consider using a record
     public class Point : IEquatable<Point>
     {
-        public int X { get; set; }
-        public int Y { get; set; }
+        public int X { get; }
+        public int Y { get; }
 
         public Point(int x, int y)
         {
@@ -332,13 +330,13 @@ namespace SnakeDotNet
 
     public class Snake
     {
-        private readonly Action<Rectangle, int> setX;
-        private readonly Action<Rectangle, int> setY;
-        private readonly Func<Rectangle, int> getX;
-        private readonly Func<Rectangle, int> getY;
-        private readonly int xMax;
-        private readonly int yMax;
-        private readonly Action<Rectangle> addLink;
+        private readonly Action<Rectangle, int> _setX;
+        private readonly Action<Rectangle, int> _setY;
+        private readonly Func<Rectangle, int> _getX;
+        private readonly Func<Rectangle, int> _getY;
+        private readonly int _xMax;
+        private readonly int _yMax;
+        private readonly Action<Rectangle> _addLink;
         private bool _extend = false;
         private bool _allowDirectionChange = true;
         private int _currentTailIndex = 0;
@@ -349,6 +347,7 @@ namespace SnakeDotNet
         public static readonly Point DOWN_DIRECTION = new(x: 0, y: 10);
 
         private Point _currentDirection;
+
         public Point CurrentDirection
         {
             get => _currentDirection;
@@ -366,7 +365,7 @@ namespace SnakeDotNet
                 if (_currentDirection == value)
                     return;
 
-                /* Don't allow the opposit direction */
+                /* Don't allow the opposite direction */
                 if (_currentDirection == RIGHT_DIRECTION && value == LEFT_DIRECTION)
                     return;
 
@@ -384,24 +383,24 @@ namespace SnakeDotNet
             }
         }
 
-        public List<Rectangle> Links { get; set; }
+        public List<Rectangle> Links { get; }
 
         public Snake(Action<Rectangle, int> setX,
-                     Action<Rectangle, int> setY,
-                     Func<Rectangle, int> getX,
-                     Func<Rectangle, int> getY,
-                     Action<Rectangle> addLink,
-                     int xMax,
-                     int yMax,
-                     List<Rectangle> links)
+            Action<Rectangle, int> setY,
+            Func<Rectangle, int> getX,
+            Func<Rectangle, int> getY,
+            Action<Rectangle> addLink,
+            int xMax,
+            int yMax,
+            List<Rectangle> links)
         {
-            this.setX = setX;
-            this.setY = setY;
-            this.getX = getX;
-            this.getY = getY;
-            this.xMax = xMax;
-            this.yMax = yMax;
-            this.addLink = addLink;
+            _setX = setX;
+            _setY = setY;
+            _getX = getX;
+            _getY = getY;
+            _xMax = xMax;
+            _yMax = yMax;
+            _addLink = addLink;
             Links = links;
 
             CurrentDirection = RIGHT_DIRECTION;
@@ -413,18 +412,18 @@ namespace SnakeDotNet
 
             if (currentX < 0)
             {
-                x = xMax;
+                x = _xMax;
             }
-            else if (currentX >= xMax)
+            else if (currentX >= _xMax)
             {
                 x = 0;
             }
 
             if (currentY < 0)
             {
-                y = yMax;
+                y = _yMax;
             }
-            else if (currentY >= yMax)
+            else if (currentY >= _yMax)
             {
                 y = 0;
             }
@@ -432,36 +431,36 @@ namespace SnakeDotNet
             return (x, y);
         }
 
-        public List<Rectangle> MoveForwad()
+        public List<Rectangle> MoveForward()
         {
-            // TODO: Consinder saving the Positions instead of
+            // TODO: Consider saving the Positions instead of
             //       reading it every time with getX() and getY()
             if (_extend)
             {
                 var head = Links.Last();
 
-                var currentHeadX = getX(head);
-                var currentHeadY = getY(head);
+                var currentHeadX = _getX(head);
+                var currentHeadY = _getY(head);
 
                 var rect = new Rectangle
                 {
                     Width = 10,
                     Height = 10,
-                    Fill = (SolidColorBrush)new BrushConverter().ConvertFrom("#293253"),
+                    Fill = (SolidColorBrush) new BrushConverter().ConvertFrom("#293253"),
                 };
 
-                setX(rect, currentHeadX);
-                setY(rect, currentHeadY);
+                _setX(rect, currentHeadX);
+                _setY(rect, currentHeadY);
 
-                addLink(rect);
+                _addLink(rect);
 
                 var newHeadX = currentHeadX + CurrentDirection.X;
                 var newHeadY = currentHeadY + CurrentDirection.Y;
 
                 (newHeadX, newHeadY) = BoundCheckXY(newHeadX, newHeadY);
 
-                setX(head, newHeadX);
-                setY(head, newHeadY);
+                _setX(head, newHeadX);
+                _setY(head, newHeadY);
 
                 /*
                     We draw the new Link to the current head.
@@ -494,19 +493,19 @@ namespace SnakeDotNet
                 var tail = Links[_currentTailIndex];
                 var head = Links.Last();
 
-                var currentHeadX = getX(head);
-                var currentHeadY = getY(head);
+                var currentHeadX = _getX(head);
+                var currentHeadY = _getY(head);
 
-                setX(tail, currentHeadX);
-                setY(tail, currentHeadY);
+                _setX(tail, currentHeadX);
+                _setY(tail, currentHeadY);
 
                 var newHeadX = currentHeadX + CurrentDirection.X;
                 var newHeadY = currentHeadY + CurrentDirection.Y;
 
                 (newHeadX, newHeadY) = BoundCheckXY(newHeadX, newHeadY);
 
-                setX(head, newHeadX);
-                setY(head, newHeadY);
+                _setX(head, newHeadX);
+                _setY(head, newHeadY);
 
                 _currentTailIndex = ++_currentTailIndex % (Links.Count - 1);
             }
@@ -515,11 +514,11 @@ namespace SnakeDotNet
                 Just allow one direction change for each movement.
                 
                 E.g. imagine the Delay in  the render task would be 2s.
-                It would be possible to chachge the direction within this
+                It would be possible to change the direction within this
                 2s delay from e.g. left -> up -> right. Now when the render function
-                runs and the snake would colide with itself so the checks for the
+                runs and the snake would collide with itself so the checks for the
                 opposite position in the getter of the CurrentDirection property
-                would not work as expectet and would not handle the opposite
+                would not work as expected and would not handle the opposite
                 direction restriction.
              */
             _allowDirectionChange = true;
@@ -536,12 +535,12 @@ namespace SnakeDotNet
         {
             return Links.Any(link =>
             {
-                var linkX = getX(link);
-                var linkY = getY(link);
+                var linkX = _getX(link);
+                var linkY = _getY(link);
 
                 var head = Links.Last();
-                var headX = getX(head);
-                var headY = getY(head);
+                var headX = _getX(head);
+                var headY = _getY(head);
 
                 if (head == link)
                     return false;
