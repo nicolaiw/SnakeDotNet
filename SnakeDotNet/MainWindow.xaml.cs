@@ -153,16 +153,20 @@ public partial class MainWindow : Window
 
             // Example : 189 --> 18.9 --> 190
             //
-            // this makes sure the snak x an y Position is divisible 10 so
-            // that we can easly check vor colision of the snake with the snack
-            // by comparint just be x and y value of the head of the snake
-            // with the snacks x and y value
+            // This makes sure the snake x and y position is divisible 10 so
+            // that we can easly check for colision of the snake with the snack
+            // by compare int just be x and y value of the head of the snake
+            // with the snacks x and y value.
             x = (int)(Math.Round(tempX) * 10);
             y = (int)(Math.Round(tempY) * 10);
-        } while (Snake.Links.Any(rect =>
+        } while (Snake.Links.Any(
+                rect =>
                 {
                     var pos = GetPosition(rect);
-
+                    
+                    // Search for a random position and make sure the
+                    // snack position is not a position of any
+                    // of the snakes link.
                     return pos.X == x && pos.Y == y;
                 }));
 
